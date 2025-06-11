@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zing\LaravelScout\OpenSearch;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\EngineManager;
 use OpenSearch\Client;
@@ -25,9 +26,17 @@ class OpenSearchServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $clientConfig = array_merge(
+            [
+                'hosts' => ['localhost:9200'],
+                'retries' => 2,
+            ],
+            Config::get('scout.opensearch', [])
+        );
+
         $this->app->singleton(
             Client::class,
-            static fn ($app): Client => ClientBuilder::fromConfig($app['config']->get('scout.opensearch'))
+            static fn ($app): Client => ClientBuilder::fromConfig($clientConfig)
         );
     }
 }

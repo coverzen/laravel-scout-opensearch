@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Zing\LaravelScout\OpenSearch\Engines;
 
@@ -15,7 +13,7 @@ use Laravel\Scout\Jobs\RemoveableScoutCollection;
 use OpenSearch\Client;
 
 /**
- * @mixin \OpenSearch\Client
+ * @mixin Client
  */
 class OpenSearchEngine extends Engine
 {
@@ -34,6 +32,17 @@ class OpenSearchEngine extends Engine
      * @param \Illuminate\Database\Eloquent\Collection<int, covariant \Illuminate\Database\Eloquent\Model> $models
      */
     public function update($models): void
+    {
+        $this->updateWithOptions($models);
+    }
+
+    /**
+     * Update the given model in the index.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection<int, covariant \Illuminate\Database\Eloquent\Model> $models
+     * @param array<array-key, mixed> $options
+     */
+    public function updateWithOptions($models, $options = []): void
     {
         if ($models->isEmpty()) {
             return;
@@ -74,6 +83,7 @@ class OpenSearchEngine extends Engine
             $this->client->bulk([
                 'index' => $model->searchableAs(),
                 'body' => $data,
+                ...Arr::except($options, ['index', 'body']),
             ]);
         }
     }
@@ -84,6 +94,17 @@ class OpenSearchEngine extends Engine
      * @param \Illuminate\Database\Eloquent\Collection<int, covariant \Illuminate\Database\Eloquent\Model> $models
      */
     public function delete($models): void
+    {
+        $this->deleteWithOptions($models);
+    }
+
+    /**
+     * Remove the given model from the index.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection<int, covariant \Illuminate\Database\Eloquent\Model> $models
+     * @param array<array-key, mixed> $options
+     */
+    public function deleteWithOptions($models, $options = []): void
     {
         if ($models->isEmpty()) {
             return;
@@ -106,6 +127,7 @@ class OpenSearchEngine extends Engine
         $this->client->bulk([
             'index' => $model->searchableAs(),
             'body' => $data,
+            ...Arr::except($options, ['index', 'body']),
         ]);
     }
 
